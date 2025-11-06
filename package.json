@@ -1,0 +1,17 @@
+{
+  "name": "otchet-sklada-new",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:serve": "php -S localhost:8000",
+    "start:dev": "node bs.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.14.0",
+  "devDependencies": {
+    "browser-sync": "^3.0.4"
+  }
+}

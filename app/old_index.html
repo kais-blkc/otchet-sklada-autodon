@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Отчет склада сотрудников</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/flatpickr.min.css" />
+    <link rel="stylesheet" href="./css/fancybox.css" />
+    <link rel="stylesheet" href="./css/style.css?v=2" />
+  </head>
+
+  <body>
+    <section id="root" class="p-sec">
+      <div class="app-container">
+        <h1 class="text-center">Отчет склада сотрудников Autodon</h1>
+
+        <div class="datepicker mt-3">
+          <label for="date" class="datepicker__label">Год</label>
+          <input
+            id="date"
+            type="number"
+            step="1"
+            min="1900"
+            max="9999"
+            inputmode="numeric"
+            class="datepicker__form-control form-control"
+          />
+        </div>
+
+        <div class="app-year-content" id="app-year-content"></div>
+      </div>
+
+      <div
+        class="employees-table-wrapper mt-5 rounded-3"
+        id="employees-table-wrap"
+      >
+        <form class="employees-form" id="employees-form">
+          <table id="employees-table">
+            <thead>
+              <tr>
+                <th rowspan="2">Сотрудники</th>
+              </tr>
+              <tr>
+                <th>Время</th>
+                <th>План задач (фото)</th>
+                <th>Комментарий к плану</th>
+                <th>Факт работы (фото)</th>
+                <th>Комментарий к факту</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </form>
+      </div>
+
+      <div class="app-container">
+        <div class="app-not-found" id="app-not-found">
+          <p>Отчеты не найдены</p>
+        </div>
+
+        <button class="app-btn btn btn-accent mt-3 ms-auto" id="add-employee">
+          + Добавить сотрудника
+        </button>
+
+        <button
+          class="app-btn btn btn-accent mt-3 ms-auto"
+          id="save-raport-btn"
+        >
+          Сохранить
+        </button>
+      </div>
+    </section>
+
+    <div class="app-info-block" id="app-info-block">Тут будет информация</div>
+    <div class="app-loading" id="app-loading">
+      <span>Загрузка...</span>
+    </div>
+
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <script src="./js/flatpickr.js"></script>
+    <script src="./js/flatpickr-ru.js"></script>
+    <script src="./js/fancybox.umd.js"></script>
+    <script src="./js/index.js?v=2"></script>
+  </body>
+</html>
