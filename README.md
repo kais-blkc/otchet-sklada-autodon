@@ -4,24 +4,27 @@
 
 ## Стек технологий
 
-### Фронтен
+### Frontend
+
 - HTML
 - CSS
 - JavaScript
 - [Bootstrap](https://getbootstrap.com/) - CSS фреймворк
 - [Fancybox](https://fancyapps.com/fancybox/) - библиотека для просмотра изображений
-- [Flatpickr](https://flatpickr.js.org/) - библиотека для выбора даты
 
-### Бекенд
+### Backend
+
 - PHP
 
-### База данных
-- MySQL / MariaDB (предположительно)
+### DB
+
+- MySQL
 
 ### Окружение для разработки
+
 - [Node.js](https://nodejs.org/)
 - [BrowserSync](https://browsersync.io/) - для live-reload
-- [PNPM](https://pnpm.io/) - менеджер паке��ов
+- [PNPM](https://pnpm.io/) - менеджер пакетов
 
 ## Возможности
 
@@ -34,15 +37,18 @@
 ## Как запустить
 
 1.  **Установка зависимостей:**
+
     ```bash
     pnpm install
     ```
 
 2.  **Запуск PHP сервера:**
     Приложение требует запуска встроенного PHP сервера.
+
     ```bash
     pnpm run start:serve
     ```
+
     Сервер будет доступен по адресу `http://localhost:8000`.
 
 3.  **Запуск в режиме разработки с live-reload:**

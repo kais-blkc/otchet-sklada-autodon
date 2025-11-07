@@ -8,6 +8,8 @@ const CONST_EMPLOYEES_TABLE_WRAP_ID = '#employees-table-wrap';
 const CONST_NOT_FOUND_MESSAGE = 'Ничего не найдено';
 const CONST_NOT_FOUND_ID = '#app-not-found';
 const CONST_REMOVE_EMPLOYEE_BTN_ID = '#remove-employee';
+const CONST_REMOVE_ONE_EMPLOYEE_BTN_DATASET = 'data-remove-one-employee';
+const CONST_REMOVE_ALL_EMPLOYEE_BTN_DATASET = 'data-remove-all-employees';
 const CONST_INFO_BLOCK_ID = '#app-info-block';
 const CONST_LOADING_ID = '#app-loading';
 const CONST_SUMMARY_DAY_DATASET = 'data-day-date';
@@ -80,6 +82,16 @@ function openCurDay(date) {
   }
 }
 
+function reopenCurDay() {
+  const openedDetails = document.querySelectorAll(
+    'details[data-day-date][open]',
+  );
+  openedDetails.forEach((detail) => {
+    detail.click();
+    detail.click();
+  });
+}
+
 // ========== INIT CLICK HANDLER ==========
 function initClickHandler() {
   document.addEventListener('click', (e) => {
@@ -96,6 +108,7 @@ function initFormSubmit() {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     saveReports();
+    reopenCurDay();
   });
 }
 
@@ -171,6 +184,7 @@ function createAccordion(year) {
       daySummary.setAttribute('data-day-date', getDate(year, mIndex, d));
       dayDetails.appendChild(daySummary);
       dayDetails.appendChild(createDayContent(year, mIndex, d));
+      dayDetails.setAttribute('data-day-date', getDate(year, mIndex, d));
       monthDetails.appendChild(dayDetails);
     }
 
@@ -179,33 +193,50 @@ function createAccordion(year) {
 }
 
 // ========== EMPLOYEES TABLE ==========
-const tdName = (index, id, value = '') => `
+const tdName = (index, id, value = '', readonly = false, removeAll = true) => `
 <!-- NAME -->
 <td>
   <div class="app-td app-td-name">
-    <button class="btn app-btn-icon remove" id="remove-employee" type="button">
-      <img src="img/trash.svg" alt="delete"/>
-    </button>
-    <input type="text" required name="employees[${index}][${id}]" class="form-control" placeholder="Имя сотрудника" value="${value}">
+    <div class="app-td-remove-btns">
+      <button class="btn app-btn-icon remove" style="${!removeAll ? 'display: none' : ''}" type="button" ${CONST_REMOVE_ONE_EMPLOYEE_BTN_DATASET}>
+        <img src="img/x.svg" alt="Удалить день"/>
+      </button>
+      <button class="btn app-btn-icon remove" type="button" ${CONST_REMOVE_ALL_EMPLOYEE_BTN_DATASET}>
+        <img src="img/trash.svg" alt="Удалить все дни"/>
+      </button>
+    </div>
+
+    <input type="text" required ${readonly ? 'readonly' : ''} name="employees[${index}][${id}]" class="form-control" placeholder="Имя сотрудника" value="${value}">
   </div>
 </td>
 `;
 
-const tdPhoto = (index, id, value = '') => `
+const imgPreviewNode = (id, value) => `
+  <div class="app-img-preview-item mt-2" style="${!value ? 'display: none' : ''}">
+    <div class="app-img-delete" data-img-delete="${value}" data-img-field="${id}"></div>
+    <a class="app-img-fancybox" data-fancybox href="${value}">
+      <img src="${value}" alt="">
+    </a>
+  </div>
+`;
+
+const tdPhoto = (index, id, value = '') => {
+  value = value ? JSON.parse(value) : [];
+  const imgs = value.map((v) => imgPreviewNode(id, v)).join('');
+
+  return `
 <!-- PHOTO -->
 <td>
   <div class="app-td app-img-upload" data-img-upload>
-    <input type="file" class="form-control" name="employees[${index}][${id}]" accept="image/*">
+    <input type="file" multiple class="form-control" name="employees[${index}][${id}][]" accept="image/*">
 
-    <div class="app-img-preview mt-2" style="${!value ? 'display: none' : ''}">
-      <div class="app-img-delete" data-img-delete="${value}" data-img-field="${id}"></div>
-      <a class="app-img-fancybox" data-fancybox href="${value}">
-        <img src="${value}" alt="">
-      </a>
+    <div class="app-img-preview-list">
+    ${imgs}
     </div>
   </div>
 </td>
 `;
+};
 
 const tdComment = (index, id, value = '') => `
 <!-- COMMENT -->
@@ -250,7 +281,7 @@ function createRow(tableId, curDate) {
 
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    ${tdName(employeesId, 'employee_name')}
+    ${tdName(employeesId, 'employee_name', '', false, false)}
     <!-- PRE LUNCH -->
     ${tdPhoto(employeesId, 'pre_lunch_photo_plan')}
     ${tdComment(employeesId, 'pre_lunch_comment_plan')}
@@ -267,7 +298,9 @@ function createRow(tableId, curDate) {
   `;
 
   // remove row
-  tr.querySelector('.remove').addEventListener('click', () => {
+  tr.querySelector(
+    `[${CONST_REMOVE_ONE_EMPLOYEE_BTN_DATASET}]`,
+  ).addEventListener('click', () => {
     const password = prompt('Введите пароль для удаления:');
     if (password === CONST_PASSWORD) {
       tr.remove();
@@ -294,7 +327,7 @@ function createRowWithData(tableId, report) {
   tr.setAttribute('data-report-id', report.id);
 
   tr.innerHTML = `
-        ${tdName(report.id, 'employee_name', report.employee_name)}
+        ${tdName(report.id, 'employee_name', report.employee_name, true)}
         <!-- PRE LUNCH -->
         ${tdPhoto(report.id, 'pre_lunch_photo_plan', report.pre_lunch_photo_plan)}
         ${tdComment(report.id, 'pre_lunch_comment_plan', report.pre_lunch_comment_plan)}
@@ -312,18 +345,30 @@ function createRowWithData(tableId, report) {
       `;
 
   // Обработчик удаления
-  const removeBtn = tr.querySelector(CONST_REMOVE_EMPLOYEE_BTN_ID);
-  if (removeBtn) {
-    removeBtn.addEventListener('click', () => {
-      const password = prompt('Введите пароль для удаления:');
+  const removeOneBtn = tr.querySelector(
+    `[${CONST_REMOVE_ONE_EMPLOYEE_BTN_DATASET}]`,
+  );
+  const removeAllBtn = tr.querySelector(
+    `[${CONST_REMOVE_ALL_EMPLOYEE_BTN_DATASET}]`,
+  );
 
-      if (password === CONST_PASSWORD) {
-        deleteReport(report.id, tr);
-      } else {
-        showNotification('Неверный пароль', false);
-      }
-    });
-  }
+  removeOneBtn?.addEventListener('click', () => {
+    const password = prompt('Введите пароль для удаления:');
+    if (password === CONST_PASSWORD) {
+      deleteReport(report.id, tr);
+    } else {
+      showNotification('Неверный пароль', false);
+    }
+  });
+
+  removeAllBtn?.addEventListener('click', () => {
+    const password = prompt('Введите пароль для удаления из всего месяца:');
+    if (password === CONST_PASSWORD) {
+      deleteReport(report.id, tr, true);
+    } else {
+      showNotification('Неверный пароль', false);
+    }
+  });
 
   tbody.appendChild(tr);
 }
@@ -332,6 +377,8 @@ function createRowWithData(tableId, report) {
 async function saveReports() {
   const form = document.querySelector(CONST_EMPLOYEES_FORM_ID);
   const formData = new FormData(form);
+
+  showFormData(form);
 
   try {
     loadingBlock.classList.add('active');
@@ -345,10 +392,14 @@ async function saveReports() {
 
     if (result.success) {
       showNotification('Отчеты успешно сохранены!');
+      return true;
     } else {
       showNotification('Ошибка при сохранении: ' + result.error, false);
+      return false;
     }
-  } catch (error) { }
+  } catch (error) {
+    return false;
+  }
 }
 
 // ========== SHOW DATA ==========
@@ -391,43 +442,48 @@ function getStatusClass(value) {
     return 'bg-danger-subtle text-danger';
   }
 }
-
 document.querySelectorAll('.app-select-status').forEach(updateSelectColor);
 
 // ========== IMG PREVIEW ==========
-function updateImgPreview() {
+function initUpdateImgPreview() {
   document.addEventListener('change', (e) => {
     const wrapper = e.target.closest('[data-img-upload]');
     const input = e.target;
     if (!input || !wrapper) return;
 
-    const file = input.files[0];
-    const imgWrapper = wrapper.querySelector('.app-img-preview');
-    const imgFancybox = imgWrapper.querySelector('a');
-    const img = imgWrapper.querySelector('img');
+    const imgWrapper = wrapper.querySelector('.app-img-preview-list');
+    const files = Array.from(input.files);
+    if (!files.length) return;
 
-    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      showNotification('Размер файла не должен превышать 1мб', false);
-      input.value = '';
-      return;
-    }
+    files.forEach((file) => {
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        showNotification(
+          `Файл ${file.name} превышает ${MAX_FILE_SIZE_MB} МБ`,
+          false,
+        );
+        return;
+      }
 
-    if (file) {
+      if (!file.type.startsWith('image/')) {
+        showNotification(`Файл ${file.name} не является изображением`, false);
+        return;
+      }
+
       const reader = new FileReader();
-      reader.onload = function(e) {
-        img.src = e.target.result;
-        imgFancybox.href = e.target.result;
-        imgWrapper.style.display = 'block';
+      reader.onload = function (event) {
+        const imgSrc = event.target.result;
+        const previewItem = document.createElement('div');
+
+        previewItem.innerHTML = imgPreviewNode(input.name, imgSrc);
+        imgWrapper.appendChild(previewItem);
       };
+
       reader.readAsDataURL(file);
-    } else {
-      img.src = '';
-      imgFancybox.href = '';
-      imgWrapper.style.display = 'none';
-    }
+    });
   });
 }
-updateImgPreview();
+
+initUpdateImgPreview();
 
 // Очистка таблицы
 function clearTable(tableId) {
@@ -472,21 +528,24 @@ async function getReports(date) {
 }
 
 // Удаление отчета
-async function deleteReport(id, tr) {
+async function deleteReport(id, tr, deleteAll = false) {
   try {
+    const action = deleteAll ? 'delete_all' : 'delete';
     const formData = new FormData();
     formData.append('id', id);
 
-    const response = await fetch(`${CONST_API_URL}?action=delete`, {
+    const response = await fetch(`${CONST_API_URL}?action=${action}`, {
       method: 'POST',
       body: formData,
     });
 
     const result = await response.json();
-
+    const successMessage = deleteAll
+      ? 'Отчеты успешно удалены'
+      : 'Отчет успешно удален';
     if (result.success) {
       tr.remove();
-      showNotification('Отчет удален');
+      showNotification(successMessage);
     } else {
       showNotification('Ошибка при удалении отчета', false);
     }
@@ -499,7 +558,7 @@ async function deleteReport(id, tr) {
 // ========== DELETE IMAGE ==========
 async function initDeleteImg(event) {
   const isDeleteBtn = event.target.closest('[data-img-delete]');
-  const imgPreview = event.target.closest('.app-img-preview');
+  const imgPreview = event.target.closest('.app-img-preview-item');
   if (!isDeleteBtn) return;
 
   if (!confirm('Вы уверены, что хотите удалить изображение?')) return;
@@ -508,9 +567,13 @@ async function initDeleteImg(event) {
     const formData = new FormData();
     const imgpath = isDeleteBtn.getAttribute('data-img-delete');
     const fieldName = isDeleteBtn.getAttribute('data-img-field');
+    const reportId = isDeleteBtn
+      .closest('[data-report-id]')
+      .getAttribute('data-report-id');
 
     formData.append('img', imgpath);
     formData.append('fieldName', fieldName);
+    formData.append('reportId', reportId);
 
     const response = await fetch(`${CONST_API_URL}?action=delete_img`, {
       method: 'POST',

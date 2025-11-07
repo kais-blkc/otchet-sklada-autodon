@@ -78,31 +78,6 @@ img {
   align-items: start;
 }
 
-.app-img-preview {
-  cursor: pointer;
-  margin-top: 10px;
-  width: 70px;
-  height: 70px;
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  position: relative;
-
-  &:hover {
-    filter: brightness(0.8);
-  }
-
-  & img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
 .app-img-delete {
   position: absolute;
   top: 0;
@@ -322,4 +297,42 @@ th[rowspan] {
       font-size: 12px;
     }
   }
+}
+
+.app-img-preview-item {
+  cursor: pointer;
+  margin-top: 10px;
+  width: 70px;
+  height: 70px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  position: relative;
+
+  &:hover {
+    filter: brightness(0.8);
+  }
+
+  & img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.app-img-preview-list {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 5px;
+}
+
+.app-td-remove-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
